@@ -8,7 +8,7 @@
   "مساحة العمل 10 ₪ للساعة"
  ],
  "note": "",
- "ordersOpen": true,
+ "ordersOpen": false,
  "orderFrom": "09:00",
  "orderTo": "21:30",
  "pauseNote": ""
