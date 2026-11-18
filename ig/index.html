@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>جُمان · مطعم وكافيه — المينيو والطلب</title>
+<meta name="description" content="مينيو مطعم وكافيه جُمان في النصيرات — اختار أصنافك وابعت طلبك على واتساب.">
+<meta name="theme-color" content="#3A2214">
+<meta property="og:title" content="جُمان · مطعم وكافيه — المينيو">
+<meta property="og:description" content="اختار أصنافك وابعت طلبك على واتساب.">
+<meta property="og:image" content="https://mkcit.github.io/juman-menu/ig/og.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="logo.png">
+<!--
+  [جُمان] صفحة المينيو لإنستغرام — رابط البايو.
+  الأصناف والأسعار من ../menu.json (نفس ملف مينيو الطاولات): تعدّلها هناك فتتغيّر في الصفحتين.
+  رقم واتساب والمواعيد والموقع من settings.json في هذا المجلد.
+  لا مكتبات خارجية ولا إنترنت إلا لفتح واتساب.
+-->
+<style>
+  @font-face { font-family: "JumanSans"; src: url("juman.woff2") format("woff2"); font-display: swap; }
+  :root {
+    --bg: #F7F1E8; --card: #FFFFFF; --brown: #3A2214; --brown2: #55331F; --gold: #E2B887; --gold2: #B4844D;
+    --ink: #2E1B10; --ink2: #6B5443; --line: #EADCC6; --ok: #2F7D4F; --danger: #B23B2E;
+    --shadow: 0 6px 20px rgba(58,34,20,.10);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: "JumanSans", "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+         font-size: 16px; line-height: 1.6; padding-bottom: 96px; }
+  button, input, textarea { font: inherit; color: inherit; }
+  a { color: inherit; }
+  .wrap { max-width: 560px; margin: 0 auto; }
+
+  /* ---------- الرأس ---------- */
+  .hero { background: radial-gradient(120% 90% at 50% 0%, #55331F 0%, #3A2214 60%, #2A180D 100%); color: var(--gold);
+          border-radius: 0 0 28px 28px; padding: 26px 16px 22px; text-align: center; }
+  .hero img { width: 112px; height: auto; display: block; margin: 0 auto 6px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.25)); }
+  .hero .tag { color: #EAD3B5; font-size: 15px; margin: 0 0 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 14px; padding: 0; list-style: none; }
+  .chips li { border: 1px solid rgba(226,184,135,.45); border-radius: 999px; padding: 4px 12px; font-size: 13.5px; color: #F1DCC2; }
+  .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .act { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 18px; border-radius: 14px;
+         text-decoration: none; font-weight: 700; border: 0; cursor: pointer; }
+  .act.wa { background: var(--gold); color: var(--brown); }
+  .act.map { background: transparent; color: var(--gold); border: 1.5px solid var(--gold); }
+  .act svg { width: 20px; height: 20px; flex: none; }
+
+  .how { margin: 14px 16px 0; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px;
+         font-size: 14.5px; color: var(--ink2); box-shadow: var(--shadow); }
+  .how b { color: var(--brown); }
+
+  /* ---------- البحث والأقسام ---------- */
+  .bar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 12px 16px 8px; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+            padding: 0 12px; min-height: 46px; }
+  .search input { border: 0; outline: 0; background: transparent; flex: 1; min-width: 0; font-size: 16px; }
+  .search svg { width: 20px; height: 20px; color: var(--ink2); flex: none; }
+  .cats { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+  .cats::-webkit-scrollbar { display: none; }
+  .cat { flex: none; border: 1px solid var(--line); background: var(--card); color: var(--brown); border-radius: 999px;
+         padding: 6px 14px; font-weight: 600; font-size: 14.5px; cursor: pointer; white-space: nowrap; }
+  .cat.on { background: var(--brown); color: var(--gold); border-color: var(--brown); }
+
+  /* ---------- الأصناف ---------- */
+  main { padding: 0 16px; }
+  section.grp { scroll-margin-top: 120px; }
+  .grp h2 { display: flex; align-items: center; gap: 10px; color: var(--gold2); font-size: 19px; margin: 18px 0 8px; }
+  .grp h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .item { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+          padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(58,34,20,.05); }
+  .item .txt { flex: 1; min-width: 0; }
+  .item .nm { font-weight: 700; font-size: 16px; overflow-wrap: anywhere; }
+  .item .sub { color: var(--ink2); font-size: 13.5px; }
+  .item .pr { color: var(--brown); font-weight: 800; font-size: 16px; white-space: nowrap; }
+  .item.off { opacity: .55; }
+  .item .ph { flex: none; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; cursor: zoom-in; background: var(--line); }
+  .dishes { display: flex; gap: 10px; overflow-x: auto; padding: 4px 16px 6px; scrollbar-width: none; }
+  .dishes::-webkit-scrollbar { display: none; }
+  .dish { flex: none; width: 140px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; cursor: zoom-in; padding: 0; text-align: right; color: var(--ink); font: inherit; }
+  .dish img { display: block; width: 140px; height: 105px; object-fit: cover; }
+  .dish span { display: block; padding: 6px 10px 8px; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dish small { color: var(--brown); font-weight: 800; }
+  .dishes-h { color: var(--gold2); font-size: 19px; margin: 14px 16px 6px; }
+  .zoom { position: fixed; inset: 0; z-index: 30; background: rgba(20,10,5,.9); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; gap: 10px; }
+  .zoom img { max-width: 100%; max-height: 72vh; border-radius: 16px; object-fit: contain; }
+  .zoom b { color: #fff; font-size: 18px; }
+  .zoom button { min-height: 48px; padding: 0 22px; border: 0; border-radius: 14px; background: var(--gold); color: var(--brown); font: inherit; font-weight: 800; cursor: pointer; }
+  .item.off .pr::after { content: " · غير متوفر حالياً"; font-weight: 500; font-size: 12.5px; color: var(--danger); }
+  .add { flex: none; width: 44px; height: 44px; border-radius: 12px; border: 0; background: var(--brown); color: var(--gold);
+         font-size: 24px; line-height: 1; cursor: pointer; }
+  .step { flex: none; display: inline-flex; align-items: center; gap: 4px; background: var(--brown); border-radius: 12px; padding: 3px; }
+  .step button { width: 38px; height: 38px; border: 0; border-radius: 9px; background: transparent; color: var(--gold); font-size: 22px; cursor: pointer; }
+  .step b { min-width: 22px; text-align: center; color: #fff; }
+  .empty { text-align: center; color: var(--ink2); padding: 30px 0; }
+  footer { text-align: center; color: var(--ink2); font-size: 13px; padding: 20px 16px 8px; }
+
+  /* ---------- السلة ---------- */
+  .cartbar { position: fixed; inset-inline: 0; bottom: 0; z-index: 10; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+             background: linear-gradient(to top, var(--bg) 70%, rgba(247,241,232,0)); display: none; }
+  .cartbar.show { display: block; }
+  .cartbar button { width: 100%; max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+                    min-height: 56px; border: 0; border-radius: 16px; background: var(--brown); color: var(--gold); padding: 0 16px;
+                    font-weight: 800; font-size: 16px; box-shadow: 0 8px 24px rgba(58,34,20,.3); cursor: pointer; }
+  .cartbar .cnt { background: var(--gold); color: var(--brown); border-radius: 999px; padding: 1px 10px; font-size: 14px; }
+
+  dialog { border: 0; padding: 0; width: min(560px, 100vw); max-width: 100vw; max-height: 92vh; margin: auto auto 0; border-radius: 22px 22px 0 0;
+           background: var(--bg); color: var(--ink); }
+  dialog::backdrop { background: rgba(30,16,8,.55); }
+  .sheet { padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .sheet h3 { margin: 0 0 10px; color: var(--brown); font-size: 19px; display: flex; justify-content: space-between; align-items: center; }
+  .x { border: 0; background: var(--card); border-radius: 10px; width: 40px; height: 40px; font-size: 20px; cursor: pointer; }
+  .lines { list-style: none; margin: 0 0 10px; padding: 0; }
+  .lines li { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; margin-bottom: 6px; }
+  .lines .nm { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .lines .sum { white-space: nowrap; font-weight: 700; color: var(--brown); }
+  .total { display: flex; justify-content: space-between; font-weight: 800; font-size: 18px; color: var(--brown); padding: 6px 4px 12px;
+           border-top: 2px dashed var(--line); }
+  .f { display: block; margin: 0 0 10px; font-weight: 600; font-size: 14.5px; }
+  .f input, .f textarea { display: block; width: 100%; margin-top: 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--card);
+                          padding: 10px 12px; font-size: 16px; min-height: 46px; }
+  .f textarea { min-height: 70px; resize: vertical; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .opts label { flex: 1 1 130px; display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line);
+                border-radius: 12px; padding: 10px 12px; font-weight: 600; cursor: pointer; }
+  .opts input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--brown); }
+  .opts span { white-space: nowrap; }
+  .opts label:has(input:checked) { border-color: var(--brown); background: #FBF6EF; }
+  .opts input:checked + span { color: var(--brown); }
+  .send { width: 100%; min-height: 56px; border: 0; border-radius: 16px; background: #1F8A4C; color: #fff; font-weight: 800; font-size: 17px;
+          display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+  .send[disabled] { background: #9aa39d; cursor: not-allowed; }
+  .send svg { width: 22px; height: 22px; }
+  .hint { color: var(--ink2); font-size: 13px; margin: 8px 2px 0; text-align: center; }
+  .err { color: var(--danger); font-weight: 700; font-size: 14px; margin: 0 0 8px; min-height: 1em; }
+  .closed { margin: 10px 16px 0; background: #FDF0E6; border: 1.5px solid #E2A877; color: #8A4A12; border-radius: 16px; padding: 12px 14px;
+            font-weight: 700; text-align: center; }
+  .sent { background: #EAF5EE; border: 1.5px solid #9FD0B1; color: #1F6B3E; border-radius: 14px; padding: 12px; font-weight: 700; text-align: center; margin: 10px 0 0; }
+  .sent button { margin-top: 8px; border: 0; background: #1F8A4C; color: #fff; border-radius: 12px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+  .clear { border: 0; background: none; color: var(--danger); font-weight: 600; cursor: pointer; padding: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <img src="logo.png" alt="جُمان — مطعم وكافيه" width="141" height="180">
+    <p class="tag" id="tag">مطعم وكافيه</p>
+    <ul class="chips" id="chips"></ul>
+    <div class="actions">
+      <a class="act wa" id="waTop" href="#" target="_blank" rel="noopener" hidden>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+        راسلنا على واتساب</a>
+      <a class="act map" id="map" href="#" target="_blank" rel="noopener" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        موقعنا</a>
+    </div>
+  </header>
+
+  <p class="how" id="how"><b>كيف تطلب؟</b> اختار أصنافك، بيطلعلك المجموع، وابعت الطلب على واتساب — <b>وطلبك بيتأكّد لما المطعم يرد عليك.</b></p>
+  <p class="closed" id="closed" role="status" hidden></p>
+
+  <div class="bar">
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="ابحث عن صنف…" autocomplete="off" aria-label="ابحث عن صنف">
+    </label>
+    <nav class="cats" id="cats" aria-label="أقسام المينيو"></nav>
+  </div>
+
+  <div id="dishWrap" hidden><h2 class="dishes-h">من أطباقنا</h2><div class="dishes" id="dishes"></div></div>
+  <main id="menu"><p class="empty">جارٍ تحميل المينيو…</p></main>
+  <footer>جُمان · مطعم وكافيه<span id="foot"></span><br>الأسعار بالشيكل، وقد تتغيّر — المطعم بيأكّد السعر بالرد.</footer>
+</div>
+
+<div class="cartbar" id="cartbar">
+  <button type="button" id="openCart"><span>راجع طلبك <span class="cnt" id="cnt">0</span></span><span id="tot">0 ₪</span></button>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="sheet">
+    <h3 id="dlgTitle">طلبك <button class="x" type="button" id="close" aria-label="إغلاق">×</button></h3>
+    <ul class="lines" id="lines"></ul>
+    <div class="total"><span>المجموع</span><span id="sumAll">0 ₪</span></div>
+    <label class="f">اسمك<input id="name" maxlength="40" autocomplete="name" placeholder="مثال: أبو أحمد"></label>
+    <div class="f">الطلب
+      <div class="opts">
+        <label><input type="radio" name="kind" value="أكل بالمطعم" checked><span>أكل بالمطعم</span></label>
+        <label><input type="radio" name="kind" value="استلام من المطعم"><span>استلام من المطعم</span></label>
+      </div>
+    </div>
+    <label class="f">الوقت (اختياري)<input id="when" maxlength="40" placeholder="مثال: اليوم الساعة 8 مساءً"></label>
+    <label class="f">ملاحظة (اختياري)<textarea id="note" maxlength="200" placeholder="مثال: بدون بصل · عددنا 5 أشخاص"></textarea></label>
+    <p class="err" id="err" role="alert"></p>
+    <button class="send" type="button" id="send">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+      <span id="sendTxt">أرسل الطلب على واتساب</span></button>
+    <p class="hint" id="sendHint">بتنفتح رسالة واتساب جاهزة فيها طلبك — اضغط «إرسال» فيها.</p>
+    <div class="sent" id="sent" role="status" hidden>✓ انفتحت رسالة واتساب بطلبك.<br>طلبك مش مؤكد إلا لما نرد عليك على واتساب.
+      <br><button type="button" id="sentDone">تمام — امسح الطلب</button></div>
+    <p class="hint"><button class="clear" type="button" id="clear">امسح الطلب وابدأ من جديد</button></p>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const fmt = n => (Math.round(n * 100) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  // بحثٌ لا يتعثّر بالهمزات والتشكيل: «اسبرسو» = «إسبرسو» · «قهوه» = «قهوة»
+  const norm = s => (s || "").replace(/[ً-ْـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").toLowerCase().trim();
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem("juman-ig-cart") || "{}"); } catch { return {}; } },
+    set(v) { try { localStorage.setItem("juman-ig-cart", JSON.stringify(v)); } catch { /* تصفّحٌ خاص — السلة في الذاكرة فقط */ } }
+  };
+
+  // ordersOpen: مفتاح الشيف (موقوفة مؤقتاً) · orderFrom/orderTo: ساعات استقبال الطلبات بتوقيت غزة («09:00» · «21:00»)
+  let settings = { whatsapp: "", place: "", mapsUrl: "", hours: [], note: "", ordersOpen: true, orderFrom: "", orderTo: "", pauseNote: "" };
+
+  /** الدقيقة الآن بتوقيت غزة (0–1439) — جوال الزبون قد يكون مضبوطاً على غير ذلك. */
+  function gazaMinutes() {
+    try {
+      const p = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Gaza", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date());
+      return (+p.find(x => x.type === "hour").value % 24) * 60 + +p.find(x => x.type === "minute").value;
+    } catch { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+  }
+  const mins = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || "").trim()); return m ? (+m[1] % 24) * 60 + +m[2] : null; };
+  /** «21:00» ⇐ «9 مساءً» · «09:30» ⇐ «9:30 صباحاً» */
+  function arTime(t) {
+    const v = mins(t); if (v === null) return t;
+    const h = Math.floor(v / 60), m = v % 60, h12 = h % 12 || 12;
+    return h12 + (m ? ":" + String(m).padStart(2, "0") : "") + " " + (h < 12 ? "صباحاً" : h < 17 ? "ظهراً" : "مساءً");
+  }
+  /** هل نستقبل طلبات الآن؟ — المفتاح أولاً، ثم الساعات (ما بعد منتصف الليل مقبول: 18:00 ← 02:00). */
+  function ordersState() {
+    if (settings.ordersOpen === false)
+      return { open: false, why: settings.pauseNote || "الطلبات متوقفة مؤقتاً — تقدر تتصفح المينيو، وبنرجع نستقبل الطلبات قريباً." };
+    const a = mins(settings.orderFrom), b = mins(settings.orderTo);
+    if (a === null || b === null || a === b) return { open: true, why: "" };
+    const now = gazaMinutes(), inside = a < b ? now >= a && now < b : now >= a || now < b;
+    return inside ? { open: true, why: "" }
+                  : { open: false, why: "الطلبات مسكّرة هلأ — بنستقبل الطلبات من " + arTime(settings.orderFrom) + " لـ " + arTime(settings.orderTo) + ". تقدر تتصفح المينيو." };
+  }
+  function showState() {
+    const st = ordersState();
+    $("closed").textContent = st.why; $("closed").hidden = st.open;
+    if ($("dlg").open) sheet();
+  }
+  let items = [];          // [{id, cat, name, sub, price, off}]
+  let cart = store.get();  // id → qty
+
+  /** رقم واتساب دولي بلا رموز: 0599… ⇐ 970599… · 00970… ⇐ 970… */
+  function waNumber(raw) {
+    let d = String(raw || "").replace(/\D/g, "");
+    if (d.startsWith("00")) d = d.slice(2);
+    if (d.startsWith("0")) d = "970" + d.slice(1);
+    return d.length >= 11 ? d : "";
+  }
+
+  async function load() {
+    try {
+      const [m, s] = await Promise.all([
+        fetch("../menu.json", { cache: "no-cache" }).then(r => r.json()),
+        fetch("settings.json", { cache: "no-cache" }).then(r => r.json()).catch(() => ({})),
+        fetch("photos.json").then(r => r.ok ? r.json() : {}).then(x => { photos = x || {}; }).catch(() => {})   // الصور اختيارية
+      ]);
+      settings = Object.assign(settings, s);
+      let n = 0;
+      for (const c of m.cats || [])
+        for (const it of c.items || [])
+          items.push({ id: c.name + "|" + it.name, cat: c.name, name: it.name, sub: it.sub || "", price: Number(it.price) || 0, off: !!it.off });
+      // سلةٌ قديمة فيها صنفٌ اختفى أو صار غير متوفر ⇒ تُنظَّف
+      for (const id of Object.keys(cart)) { const it = items.find(x => x.id === id); if (!it || it.off || !(cart[id] > 0)) delete cart[id]; }
+      header(); cats(m.cats || []); dishes(); render(); bar(); showState();
+      setInterval(showState, 60000);   // تُفتح وتُسكّر الطلبات مع الساعة دون إعادة تحميل
+    } catch (e) {
+      $("menu").innerHTML = '<p class="empty">تعذّر تحميل المينيو — حدّث الصفحة.</p>';
+    }
+  }
+
+  function header() {
+    $("tag").textContent = "مطعم وكافيه" + (settings.place ? " · " + settings.place : "");
+    $("foot").textContent = settings.place ? " · " + settings.place : "";
+    $("chips").innerHTML = "";
+    for (const h of settings.hours || []) { const li = document.createElement("li"); li.textContent = h; $("chips").appendChild(li); }
+    if (settings.note) $("how").innerHTML = "<b>كيف تطلب؟</b> " + escapeHtml(settings.note);
+    const wa = waNumber(settings.whatsapp);
+    if (wa) { $("waTop").href = "https://wa.me/" + wa + "?text=" + encodeURIComponent("مرحباً جُمان، عندي سؤال:"); $("waTop").hidden = false; }
+    if (settings.mapsUrl) { $("map").href = settings.mapsUrl; $("map").hidden = false; }
+  }
+
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  function cats(list) {
+    const nav = $("cats"); nav.innerHTML = "";
+    const all = document.createElement("button"); all.className = "cat on"; all.type = "button"; all.textContent = "الكل";
+    all.onclick = () => { window.scrollTo({ top: 0, behavior: "smooth" }); mark(all); };
+    nav.appendChild(all);
+    list.forEach((c, i) => {
+      const b = document.createElement("button"); b.className = "cat"; b.type = "button"; b.textContent = c.name;
+      b.onclick = () => { $("q").value = ""; render(); const sec = document.getElementById("g" + i); if (sec) sec.scrollIntoView({ behavior: "smooth" }); mark(b); };
+      nav.appendChild(b);
+    });
+  }
+  function mark(btn) { document.querySelectorAll(".cat").forEach(x => x.classList.toggle("on", x === btn)); }
+
+  function render() {
+    const q = norm($("q").value);
+    const groups = [];
+    for (const it of items) {
+      if (q && !norm(it.name + " " + it.sub + " " + it.cat).includes(q)) continue;
+      let g = groups.find(x => x.cat === it.cat); if (!g) groups.push(g = { cat: it.cat, list: [] });
+      g.list.push(it);
+    }
+    const catNames = [...new Set(items.map(i => i.cat))];
+    const main = $("menu"); main.innerHTML = "";
+    if (!groups.length) { main.innerHTML = '<p class="empty">ما في صنف بهالاسم.</p>'; return; }
+    for (const g of groups) {
+      const sec = document.createElement("section"); sec.className = "grp"; sec.id = "g" + catNames.indexOf(g.cat);
+      sec.innerHTML = "<h2>" + escapeHtml(g.cat) + "</h2>";
+      for (const it of g.list) sec.appendChild(row(it));
+      main.appendChild(sec);
+    }
+  }
+
+  let photos = {};
+  const photoOf = name => (typeof photos[name] === "string" && photos[name].startsWith("data:image/")) ? photos[name] : null;
+  function zoom(it) {
+    const z = document.createElement("div"); z.className = "zoom"; z.setAttribute("role", "dialog");
+    z.innerHTML = '<img alt=""><b></b><button type="button">رجوع</button>';
+    z.querySelector("img").src = photoOf(it.name); z.querySelector("b").textContent = it.name + " · " + fmt(it.price) + " ₪";
+    z.onclick = () => z.remove(); document.body.appendChild(z);
+  }
+  function dishes() {
+    const list = items.filter(i => !i.off && photoOf(i.name)); if (!list.length) return;
+    const box = $("dishes"); box.innerHTML = "";
+    for (const it of list) {
+      const b = document.createElement("button"); b.type = "button"; b.className = "dish"; b.setAttribute("aria-label", "صورة " + it.name);
+      b.innerHTML = '<img alt="" loading="lazy"><span></span>';
+      b.querySelector("img").src = photoOf(it.name); b.querySelector("span").innerHTML = escapeHtml(it.name) + " · <small>" + fmt(it.price) + " ₪</small>";
+      b.onclick = () => zoom(it); box.appendChild(b);
+    }
+    $("dishWrap").hidden = false;
+  }
+  function row(it) {
+    const d = document.createElement("div"); d.className = "item" + (it.off ? " off" : ""); d.dataset.id = it.id;
+    const ph = photoOf(it.name);
+    d.innerHTML = (ph ? '<img class="ph" alt="" loading="lazy">' : "") + '<div class="txt"><div class="nm">' + escapeHtml(it.name) + "</div>" + (it.sub ? '<div class="sub">' + escapeHtml(it.sub) + "</div>" : "")
+      + '<div class="pr">' + fmt(it.price) + " ₪</div></div>";
+    if (ph) { const im = d.querySelector(".ph"); im.src = ph; im.onclick = () => zoom(it); }
+    if (!it.off) d.appendChild(ctrl(it));
+    return d;
+  }
+
+  function ctrl(it) {
+    const q = cart[it.id] || 0;
+    if (!q) {
+      const b = document.createElement("button"); b.className = "add"; b.type = "button"; b.textContent = "+";
+      b.setAttribute("aria-label", "أضف " + it.name); b.onclick = () => change(it, 1); return b;
+    }
+    const s = document.createElement("div"); s.className = "step";
+    const plus = document.createElement("button"); plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label", "زد " + it.name); plus.onclick = () => change(it, 1);
+    const n = document.createElement("b"); n.textContent = q;
+    const minus = document.createElement("button"); minus.type = "button"; minus.textContent = "−"; minus.setAttribute("aria-label", "أنقص " + it.name); minus.onclick = () => change(it, -1);
+    s.append(plus, n, minus); return s;
+  }
+
+  function change(it, by) {
+    const q = Math.max(0, Math.min(50, (cart[it.id] || 0) + by));
+    if (q) cart[it.id] = q; else delete cart[it.id];
+    store.set(cart);
+    document.querySelectorAll('.item[data-id="' + CSS.escape(it.id) + '"]').forEach(d => { d.lastElementChild.remove(); d.appendChild(ctrl(it)); });
+    bar(); if ($("dlg").open) sheet();
+  }
+
+  const picked = () => Object.entries(cart).map(([id, q]) => ({ it: items.find(x => x.id === id), q })).filter(x => x.it);
+  const total = () => picked().reduce((s, x) => s + x.it.price * x.q, 0);
+
+  function bar() {
+    const p = picked(), n = p.reduce((s, x) => s + x.q, 0);
+    $("cartbar").classList.toggle("show", n > 0);
+    $("cnt").textContent = n; $("tot").textContent = fmt(total()) + " ₪";
+  }
+
+  function sheet() {
+    const ul = $("lines"); ul.innerHTML = "";
+    for (const { it, q } of picked()) {
+      const li = document.createElement("li");
+      li.innerHTML = '<span class="nm">' + escapeHtml(it.name) + '</span><span class="sum">' + fmt(it.price * q) + " ₪</span>";
+      li.insertBefore(ctrl(it), li.firstChild);
+      ul.appendChild(li);
+    }
+    $("sumAll").textContent = fmt(total()) + " ₪";
+    if (!picked().length) $("dlg").close();
+    const wa = waNumber(settings.whatsapp), st = ordersState();
+    $("send").disabled = !wa || !st.open;
+    $("sendTxt").textContent = !wa ? "رقم الطلبات لم يُضف بعد" : !st.open ? "الطلبات مسكّرة هلأ" : "أرسل الطلب على واتساب";
+    $("sendHint").textContent = !wa ? "صاحب الصفحة: أضف رقم واتساب من صفحة التحكّم." : !st.open ? st.why
+      : "بتنفتح رسالة واتساب جاهزة فيها طلبك — اضغط «إرسال» فيها. وطلبك بيتأكّد لما نرد عليك.";
+  }
+
+  function message() {
+    const lines = picked().map(({ it, q }) => "• " + q + " × " + it.name + " = " + fmt(it.price * q) + " ₪");
+    const kind = (document.querySelector('input[name="kind"]:checked') || {}).value || "";
+    const when = $("when").value.trim(), note = $("note").value.trim(), name = $("name").value.trim();
+    return ["طلب جديد (بانتظار تأكيدكم):", ...lines, "المجموع: " + fmt(total()) + " ₪", "الاسم: " + name, "الطلب: " + kind + (when ? " · " + when : "")]
+      .concat(note ? ["ملاحظة: " + note] : []).join("\n");
+  }
+
+  $("openCart").onclick = () => { sheet(); $("err").textContent = ""; $("sent").hidden = true; $("dlg").showModal(); };
+  $("sentDone").onclick = () => { cart = {}; store.set(cart); render(); bar(); $("sent").hidden = true; $("dlg").close(); };
+  $("close").onclick = () => $("dlg").close();
+  $("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
+  $("clear").onclick = () => { cart = {}; store.set(cart); render(); bar(); $("dlg").close(); };
+  $("q").addEventListener("input", () => { render(); mark(document.querySelector(".cat")); });
+  $("send").onclick = () => {
+    const wa = waNumber(settings.whatsapp);
+    if (!wa || !ordersState().open) { sheet(); return; }
+    if (!$("name").value.trim()) { $("err").textContent = "اكتب اسمك عشان المطعم يعرف طلب مين."; $("name").focus(); return; }
+    $("err").textContent = "";
+    window.open("https://wa.me/" + wa + "?text=" + encodeURIComponent(message()), "_blank", "noopener");
+    $("sent").hidden = false;
+  };
+  window.jumanMessage = message;   // للفحص الآلي فقط
+  load();
+})();
+</script>
+</body>
+</html>

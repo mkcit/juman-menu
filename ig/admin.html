@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>جُمان · صفحة التحكّم</title>
+<meta name="theme-color" content="#3A2214">
+<link rel="icon" href="logo.png">
+<!--
+  [جُمان] صفحة التحكّم للشيف — بلا خبرة حاسوب:
+    · زرّ واحد: الطلبات مفتوحة / موقوفة.
+    · الأصناف: السعر خانة رقم، وزرّ «متوفر / خلص»، وإضافة صنف، وحذفه.
+    · الإعدادات: رقم واتساب، ساعات الطلب، المواعيد الظاهرة، رابط الموقع.
+    · زرّ «احفظ ونشّر» يكتب ../menu.json و settings.json في مستودع GitHub مباشرة (لا نسخ ولا لصق).
+  المفتاح (GitHub fine-grained token بصلاحية Contents على هذا المستودع وحده) يُحفظ في هذا الجوال فقط.
+-->
+<style>
+  @font-face { font-family: "JumanSans"; src: url("juman.woff2") format("woff2"); font-display: swap; }
+  :root { --bg: #F7F1E8; --card: #fff; --brown: #3A2214; --gold: #E2B887; --gold2: #B4844D; --ink: #2E1B10; --ink2: #6B5443;
+          --line: #EADCC6; --ok: #1F8A4C; --warn: #C2611B; --danger: #B23B2E; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: "JumanSans", "Noto Sans Arabic", Tahoma, sans-serif; font-size: 17px; line-height: 1.6; padding-bottom: 110px; }
+  button, input, textarea { font: inherit; color: inherit; }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 0 14px; }
+  header { background: var(--brown); color: var(--gold); padding: 14px; display: flex; align-items: center; gap: 12px; border-radius: 0 0 20px 20px; }
+  header img { width: 46px; height: auto; }
+  header h1 { margin: 0; font-size: 20px; flex: 1; }
+  header a { color: var(--gold); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin: 14px 0; box-shadow: 0 4px 14px rgba(58,34,20,.06); }
+  .card h2 { margin: 0 0 8px; font-size: 18px; color: var(--brown); }
+  .muted { color: var(--ink2); font-size: 14.5px; margin: 4px 0 0; }
+  .big { width: 100%; min-height: 64px; border: 0; border-radius: 16px; font-size: 20px; font-weight: 800; cursor: pointer; color: #fff; }
+  .big.open { background: var(--ok); }
+  .big.paused { background: var(--warn); }
+  .btn { min-height: 48px; border-radius: 12px; border: 1.5px solid var(--brown); background: #fff; color: var(--brown); font-weight: 700; padding: 0 14px; cursor: pointer; }
+  .btn.solid { background: var(--brown); color: var(--gold); }
+  .btn.danger { border-color: var(--danger); color: var(--danger); }
+  .f { display: block; margin: 10px 0; font-weight: 700; font-size: 15.5px; }
+  .f input, .f textarea { display: block; width: 100%; margin-top: 4px; min-height: 50px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 12px; font-size: 17px; }
+  .f small { display: block; font-weight: 400; color: var(--ink2); font-size: 13.5px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .search { display: block; width: 100%; min-height: 50px; border: 1.5px solid var(--line); border-radius: 12px; padding: 0 12px; font-size: 17px; margin-bottom: 8px; background: #fff; }
+  details.cat { border: 1px solid var(--line); border-radius: 14px; margin: 8px 0; background: #FCF8F2; }
+  details.cat > summary { list-style: none; cursor: pointer; padding: 12px 14px; font-weight: 800; color: var(--brown); display: flex; justify-content: space-between; gap: 8px; }
+  details.cat > summary::-webkit-details-marker { display: none; }
+  details.cat > summary::after { content: "▾"; color: var(--gold2); }
+  details.cat[open] > summary::after { content: "▴"; }
+  .items { padding: 0 10px 10px; }
+  .it { background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 8px; }
+  .it.changed { border-color: var(--gold2); background: #FFFBF4; }
+  .it.off { opacity: .75; }
+  .it .nm { font-weight: 700; margin-bottom: 6px; overflow-wrap: anywhere; }
+  .it .ctl { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+  .price { display: flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 12px; padding: 0 10px; min-height: 50px; background: #fff; }
+  .price input { border: 0; outline: 0; width: 100%; min-width: 0; font-size: 20px; font-weight: 800; text-align: center; background: transparent; }
+  .price span { color: var(--ink2); font-weight: 700; }
+  .avail { min-width: 112px; min-height: 50px; border-radius: 12px; border: 0; font-weight: 800; cursor: pointer; color: #fff; background: var(--ok); }
+  .avail.no { background: #9A8F86; }
+  .it .more { margin-top: 6px; display: flex; gap: 8px; justify-content: flex-end; }
+  .link { border: 0; background: none; color: var(--danger); font-weight: 700; cursor: pointer; padding: 6px; font-size: 14.5px; }
+  .add { margin-top: 4px; border: 1.5px dashed var(--gold2); border-radius: 14px; padding: 10px; }
+  .add .row2 { grid-template-columns: 2fr 1fr; }
+  .bar { position: fixed; inset-inline: 0; bottom: 0; z-index: 10; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--bg) 70%, rgba(247,241,232,0)); }
+  .bar button { display: block; width: 100%; max-width: 620px; margin: 0 auto; min-height: 60px; border: 0; border-radius: 16px; background: var(--brown); color: var(--gold);
+                font-size: 19px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 24px rgba(58,34,20,.3); }
+  .bar button[disabled] { background: #B9AA9B; color: #fff; box-shadow: none; cursor: default; }
+  .msg { position: fixed; inset-inline: 12px; top: 12px; z-index: 20; max-width: 600px; margin: 0 auto; border-radius: 14px; padding: 12px 14px; font-weight: 700; text-align: center;
+         box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+  .msg.ok { background: #EAF5EE; color: #1F6B3E; border: 1.5px solid #9FD0B1; }
+  .msg.err { background: #FDECEA; color: #8C2F22; border: 1.5px solid #F0B3AB; }
+  .msg.wait { background: #FFF6E5; color: #7A5A12; border: 1.5px solid #E8CF9A; }
+  .steps { padding-inline-start: 20px; margin: 6px 0; font-size: 15px; color: var(--ink2); }
+</style>
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="">
+  <h1>صفحة التحكّم</h1>
+  <a href="index.html" target="_blank" rel="noopener" id="viewSite">صفحة الزبائن ↗</a>
+</header>
+<div class="msg" id="msg" role="status" hidden></div>
+
+<div class="wrap">
+  <!-- ================= أول مرّة: المفتاح ================= -->
+  <section class="card" id="setup" hidden>
+    <h2>أول مرّة على هذا الجوال</h2>
+    <p class="muted">هاي الخطوة بيعملها <b>محمد</b> مرّة وحدة: يلصق «مفتاح النشر» هون، وبعدها الشيف بيعدّل وبينشر بضغطة.</p>
+    <label class="f">مفتاح النشر<input id="token" type="password" autocomplete="off" placeholder="github_pat_…" dir="ltr"></label>
+    <details>
+      <summary class="muted">متقدّم (عادةً ما بتحتاجه)</summary>
+      <div class="row2">
+        <label class="f">الحساب<input id="cfgOwner" dir="ltr"></label>
+        <label class="f">المستودع<input id="cfgRepo" dir="ltr"></label>
+      </div>
+      <div class="row2">
+        <label class="f">الفرع<input id="cfgBranch" dir="ltr"></label>
+        <label class="f">مجلد الصفحة<input id="cfgDir" dir="ltr"></label>
+      </div>
+    </details>
+    <button class="btn solid" type="button" id="saveToken" style="width:100%;margin-top:10px">احفظ وادخل</button>
+  </section>
+
+  <div id="app" hidden>
+    <!-- ================= الطلبات ================= -->
+    <section class="card">
+      <h2>استقبال الطلبات</h2>
+      <button class="big" type="button" id="toggleOrders"></button>
+      <p class="muted" id="ordersHint"></p>
+    </section>
+
+    <!-- ================= الأصناف ================= -->
+    <section class="card">
+      <h2>الأصناف والأسعار</h2>
+      <p class="muted">غيّر السعر، أو اضغط «متوفر» ليصير «خلص». وبعدين اضغط «احفظ ونشّر» تحت.</p>
+      <input class="search" id="q" type="search" placeholder="دوّر على صنف…" autocomplete="off">
+      <div id="cats"></div>
+    </section>
+
+    <!-- ================= الإعدادات ================= -->
+    <section class="card">
+      <details id="settingsBox">
+        <summary><h2 style="display:inline">الإعدادات ▾</h2></summary>
+        <label class="f">رقم واتساب الطلبات<input id="sWa" inputmode="tel" placeholder="0599123456" dir="ltr"><small>الرقم اللي بتوصله الطلبات.</small></label>
+        <div class="row2">
+          <label class="f">الطلبات من الساعة<input id="sFrom" type="time"></label>
+          <label class="f">لحد الساعة<input id="sTo" type="time"></label>
+        </div>
+        <p class="muted">برا هالوقت الزبون بيقدر يتصفح المينيو بس، وما بيقدر يبعت طلب.</p>
+        <label class="f">المواعيد اللي بتظهر فوق للزبون<textarea id="sHours" rows="3" placeholder="كل موعد بسطر"></textarea><small>كل سطر = موعد.</small></label>
+        <label class="f">رابط موقع المطعم (اختياري)<input id="sMap" dir="ltr" placeholder="https://maps.app.goo.gl/…"><small>من خرائط جوجل ← مشاركة ← نسخ الرابط.</small></label>
+        <label class="f">رسالة لما الطلبات موقوفة (اختياري)<input id="sPause" maxlength="120" placeholder="مثال: عنا ضغط هلأ — ارجعلنا بعد ساعة"></label>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>واتساب بزنس — مرّة وحدة</h2>
+      <ol class="steps">
+        <li>واتساب بزنس ← الإعدادات ← أدوات الأعمال ← <b>رسالة الترحيب</b>: «وصل طلبك ✓ بنأكّده خلال 15 دقيقة».</li>
+        <li><b>رسالة الغياب</b>: «إحنا مسكّرين هلأ — بنرد عليك أول ما نفتح».</li>
+        <li>الطلب ما بينطبخ إلا بعد ما ترد على الزبون وتأكّد. والطلب الكبير بعد التحويل.</li>
+      </ol>
+    </section>
+
+    <p style="text-align:center"><button class="link" type="button" id="logout">امسح المفتاح من هذا الجوال</button></p>
+  </div>
+</div>
+
+<div class="bar" id="bar" hidden><button type="button" id="publish" disabled>ما في تعديلات</button></div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const KEY = "juman-admin";
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ---------- أين الملفات؟ من رابط الصفحة نفسه: mkcit.github.io/juman-menu/ig/admin.html ----------
+  function guessCfg() {
+    const host = location.hostname, parts = location.pathname.split("/").filter(Boolean);
+    const owner = /\.github\.io$/i.test(host) ? host.split(".")[0] : "mkcit";
+    const repo = /\.github\.io$/i.test(host) && parts.length ? parts[0] : "juman-menu";
+    const dir = /\.github\.io$/i.test(host) ? parts.slice(1, -1).join("/") : "ig";
+    return { owner, repo, branch: "main", dir: dir || "ig" };
+  }
+  function loadSaved() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } }
+  function saveSaved(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); return true; } catch { return false; } }
+  let cfg = loadSaved();
+
+  // ---------- GitHub ----------
+  const api = path => `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`;
+  const menuPath = () => (cfg.dir.includes("/") ? cfg.dir.split("/").slice(0, -1).join("/") + "/" : "") + "menu.json";
+  const settingsPath = () => cfg.dir + "/settings.json";
+  const headers = () => ({ Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" });
+  const b64decode = b => new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g, "")), c => c.charCodeAt(0)));
+  function b64encode(str) {
+    const bytes = new TextEncoder().encode(str); let bin = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  class GhError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
+  async function ghGet(path) {
+    let r; try { r = await fetch(api(path) + "?ref=" + encodeURIComponent(cfg.branch) + "&t=" + Date.now(), { headers: headers(), cache: "no-store" }); }
+    catch { throw new GhError(0, "net"); }
+    if (!r.ok) throw new GhError(r.status, "get");
+    const j = await r.json(); return { sha: j.sha, text: b64decode(j.content || "") };
+  }
+  async function ghPut(path, text, sha, message) {
+    let r; try {
+      r = await fetch(api(path), { method: "PUT", headers: { ...headers(), "Content-Type": "application/json" },
+        body: JSON.stringify({ message, content: b64encode(text), sha, branch: cfg.branch }) });
+    } catch { throw new GhError(0, "net"); }
+    if (!r.ok) throw new GhError(r.status, "put");
+    return (await r.json()).content.sha;
+  }
+  function humanError(e) {
+    if (!(e instanceof GhError) || e.status === 0) return "ما في إنترنت، أو الاتصال انقطع — جرّب كمان مرّة.";
+    if (e.status === 401 || e.status === 403) return "مفتاح النشر غلط أو انتهى — خلّي محمد يحط مفتاح جديد.";
+    if (e.status === 404) return "ما لقيت الملفات على GitHub — خلّي محمد يتأكد من الإعدادات المتقدّمة.";
+    if (e.status === 409 || e.status === 422) return "في تعديل صار من مكان ثاني بنفس الوقت — حدّث الصفحة وأعد تعديلك.";
+    return "صار خطأ (" + e.status + ") — جرّب كمان مرّة.";
+  }
+
+  // ---------- الحالة ----------
+  let menu = null, menuSha = "", menuOrig = "";
+  let settings = null, settingsSha = "", settingsOrig = "";
+
+  function toast(text, kind = "ok", ms = 3500) {
+    const m = $("msg"); m.textContent = text; m.className = "msg " + kind; m.hidden = false;
+    clearTimeout(toast.t); if (ms) toast.t = setTimeout(() => m.hidden = true, ms);
+  }
+
+  /** «١٢٫٥» · «12,5» · «12.5» ⇐ 12.5 — الشيف يكتب كيف ما بده. */
+  function parsePrice(v) {
+    const s = String(v || "").trim().replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+      .replace(/[٫,،]/g, ".").replace(/[^\d.]/g, "");
+    const n = Number(s); return s && isFinite(n) ? Math.round(n * 100) / 100 : null;
+  }
+
+  async function start() {
+    if (!cfg || !cfg.token) { showSetup(); return; }
+    $("setup").hidden = true;
+    toast("جارٍ التحميل…", "wait", 0);
+    try {
+      const [m, s] = await Promise.all([ghGet(menuPath()), ghGet(settingsPath()).catch(e => { if (e.status === 404) return { sha: "", text: "{}" }; throw e; })]);
+      menu = JSON.parse(m.text); menuSha = m.sha; menuOrig = JSON.stringify(menu.cats);
+      settings = Object.assign({ whatsapp: "", place: "النصيرات", mapsUrl: "", hours: [], note: "", ordersOpen: true, orderFrom: "", orderTo: "", pauseNote: "" }, JSON.parse(s.text || "{}"));
+      settingsSha = s.sha; settingsOrig = JSON.stringify(settings);
+      $("msg").hidden = true; $("app").hidden = false; $("bar").hidden = false;
+      fillSettings(); renderOrders(); renderMenu(); dirty();
+    } catch (e) {
+      if (e.status === 404) { await explain404(); return; }
+      toast(humanError(e), "err", 0);
+      if (e.status === 401 || e.status === 403) showSetup();
+    }
+  }
+
+  /** 404 من GitHub ممكن يعني 3 أشياء — نفحص ونقول السبب بالضبط، ونرجّع خانة المفتاح دايماً (ما في صفحة فاضية). */
+  async function explain404() {
+    let why;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}`, { headers: headers(), cache: "no-store" });
+      if (r.status === 401 || r.status === 403) why = humanError(new GhError(r.status, "repo"));
+      else if (r.status === 404) why = `المفتاح ما إله إذن على مستودع «${cfg.repo}» (أو اسم الحساب/المستودع غلط). اعمل مفتاح جديد: Only select repositories ← ${cfg.repo} · و Contents ← Read and write.`;
+      else if (r.ok) {
+        const j = await r.json();
+        if (j.default_branch && j.default_branch !== cfg.branch && !start.retried) {
+          cfg.branch = j.default_branch; saveSaved(cfg); start.retried = true; return start();   // الفرع اسمه غير main — نصلّحه لحاله
+        }
+        const miss = [];
+        for (const f of [menuPath(), settingsPath()]) { try { await ghGet(f); } catch (e) { if (e.status === 404) miss.push(f); } }
+        why = miss.length ? "المفتاح تمام، بس هالملف مش موجود بالمستودع: " + miss.join(" و ") + " — ارفعه مكانه." : "ما لقيت الملفات على GitHub — جرّب كمان مرّة.";
+      } else why = "صار خطأ (" + r.status + ") — جرّب كمان مرّة.";
+    } catch { why = humanError(new GhError(0, "net")); }
+    showSetup(); toast(why, "err", 0);
+  }
+
+  function showSetup() {
+    const g = cfg || guessCfg();
+    $("cfgOwner").value = g.owner; $("cfgRepo").value = g.repo; $("cfgBranch").value = g.branch || "main"; $("cfgDir").value = g.dir || "ig";
+    $("token").value = ""; $("setup").hidden = false; $("app").hidden = true; $("bar").hidden = true;
+  }
+  $("saveToken").onclick = () => {
+    const token = $("token").value.trim();
+    if (token.length < 20) { toast("الصق مفتاح النشر كامل.", "err"); return; }
+    cfg = { token, owner: $("cfgOwner").value.trim(), repo: $("cfgRepo").value.trim(), branch: $("cfgBranch").value.trim() || "main", dir: $("cfgDir").value.trim().replace(/^\/|\/$/g, "") || "ig" };
+    if (!saveSaved(cfg)) toast("هذا المتصفح ما بيحفظ — رح تحتاج تلصق المفتاح كل مرّة.", "wait");
+    start();
+  };
+  $("logout").onclick = () => {
+    if (!confirm("أكيد؟ بعدها رح تحتاج مفتاح النشر من جديد.")) return;
+    try { localStorage.removeItem(KEY); } catch {}
+    cfg = null; showSetup();
+  };
+
+  // ---------- الطلبات: زرّ واحد ----------
+  function renderOrders() {
+    const on = settings.ordersOpen !== false;
+    $("toggleOrders").className = "big " + (on ? "open" : "paused");
+    $("toggleOrders").textContent = on ? "الطلبات مفتوحة ✓ (اضغط للإيقاف)" : "الطلبات موقوفة (اضغط للفتح)";
+    const hrs = settings.orderFrom && settings.orderTo ? `من ${settings.orderFrom} لـ ${settings.orderTo}` : "طول الوقت";
+    $("ordersHint").textContent = on ? `الزبائن بيقدروا يطلبوا ${hrs}. وقّفها لما يكون في ضغط أو ما حدا فاضي يرد.`
+                                     : "الزبائن بيشوفوا المينيو بس، وما بيقدروا يبعتوا طلب.";
+  }
+  $("toggleOrders").onclick = async () => {
+    // الإيقاف/الفتح بيتنشر فوراً — ما بيستنى زرّ «احفظ ونشّر».
+    const next = settings.ordersOpen === false;
+    const copy = Object.assign({}, JSON.parse(settingsOrig || "{}"), { ordersOpen: next });
+    $("toggleOrders").disabled = true; toast(next ? "جارٍ فتح الطلبات…" : "جارٍ إيقاف الطلبات…", "wait", 0);
+    try {
+      settingsSha = await ghPut(settingsPath(), JSON.stringify(copy, null, 1) + "\n", settingsSha || undefined, next ? "فتح الطلبات" : "إيقاف الطلبات مؤقتاً");
+      settings.ordersOpen = next; settingsOrig = JSON.stringify(copy);
+      renderOrders(); dirty();
+      toast((next ? "تم ✓ الطلبات مفتوحة" : "تم ✓ الطلبات موقوفة") + " — بيظهر للزبائن خلال دقيقة.");
+    } catch (e) { toast(humanError(e), "err", 0); }
+    finally { $("toggleOrders").disabled = false; }
+  };
+
+  // ---------- الإعدادات ----------
+  function fillSettings() {
+    $("sWa").value = settings.whatsapp || ""; $("sFrom").value = settings.orderFrom || ""; $("sTo").value = settings.orderTo || "";
+    $("sHours").value = (settings.hours || []).join("\n"); $("sMap").value = settings.mapsUrl || ""; $("sPause").value = settings.pauseNote || "";
+    for (const id of ["sWa", "sFrom", "sTo", "sHours", "sMap", "sPause"]) $(id).oninput = () => { readSettings(); dirty(); };
+  }
+  function readSettings() {
+    settings.whatsapp = $("sWa").value.trim(); settings.orderFrom = $("sFrom").value; settings.orderTo = $("sTo").value;
+    settings.hours = $("sHours").value.split("\n").map(x => x.trim()).filter(Boolean);
+    settings.mapsUrl = $("sMap").value.trim(); settings.pauseNote = $("sPause").value.trim();
+  }
+
+  // ---------- الأصناف ----------
+  function renderMenu() {
+    const q = $("q").value.trim(), box = $("cats"); box.innerHTML = "";
+    const openAll = !!q;
+    menu.cats.forEach((c, ci) => {
+      const list = c.items.map((it, ii) => ({ it, ii })).filter(x => !q || x.it.name.includes(q));
+      if (q && !list.length) return;
+      const d = document.createElement("details"); d.className = "cat"; d.open = openAll || renderMenu.open?.has(ci);
+      d.ontoggle = () => { renderMenu.open ??= new Set(); d.open ? renderMenu.open.add(ci) : renderMenu.open.delete(ci); };
+      const off = c.items.filter(i => i.off).length;
+      d.innerHTML = `<summary><span>${esc(c.name)}</span><span class="muted">${c.items.length} صنف${off ? " · " + off + " خلص" : ""}</span></summary>`;
+      const wrap = document.createElement("div"); wrap.className = "items";
+      for (const { it, ii } of list) wrap.appendChild(itemCard(ci, ii, it));
+      if (!q) wrap.appendChild(addCard(ci));
+      d.appendChild(wrap); box.appendChild(d);
+    });
+  }
+  $("q").oninput = renderMenu;
+
+  function origItem(ci, name) {
+    try { return JSON.parse(menuOrig)[ci]?.items.find(x => x.name === name) || null; } catch { return null; }
+  }
+  function itemCard(ci, ii, it) {
+    const o = origItem(ci, it.name);
+    const el = document.createElement("div");
+    el.className = "it" + (it.off ? " off" : "") + (!o || o.price !== it.price || !!o.off !== !!it.off ? " changed" : "");
+    el.innerHTML = `<div class="nm">${esc(it.name)}</div>
+      <div class="ctl">
+        <label class="price"><input inputmode="decimal" value="${esc(it.price)}" aria-label="سعر ${esc(it.name)}"><span>₪</span></label>
+        <button type="button" class="avail${it.off ? " no" : ""}">${it.off ? "خلص" : "متوفر ✓"}</button>
+      </div>
+      <div class="more"><button type="button" class="link">حذف الصنف</button></div>`;
+    const inp = el.querySelector("input");
+    inp.onchange = () => {
+      const p = parsePrice(inp.value);
+      if (p === null || p < 0) { toast("اكتب السعر رقم، مثل 15 أو 12.5", "err"); inp.value = it.price; return; }
+      it.price = p; inp.value = p; refreshCard(el, ci, it); dirty();
+    };
+    el.querySelector(".avail").onclick = () => { it.off = !it.off; refreshCard(el, ci, it); dirty(); };
+    el.querySelector(".link").onclick = () => {
+      if (!confirm(`أكيد بدك تحذف «${it.name}» من المينيو؟`)) return;
+      menu.cats[ci].items.splice(menu.cats[ci].items.indexOf(it), 1); renderMenu(); dirty();
+    };
+    return el;
+  }
+  function refreshCard(el, ci, it) {
+    const o = origItem(ci, it.name), b = el.querySelector(".avail");
+    b.textContent = it.off ? "خلص" : "متوفر ✓"; b.className = "avail" + (it.off ? " no" : "");
+    el.classList.toggle("off", !!it.off);
+    el.classList.toggle("changed", !o || o.price !== it.price || !!o.off !== !!it.off);
+  }
+  function addCard(ci) {
+    const el = document.createElement("div"); el.className = "add";
+    el.innerHTML = `<div class="row2"><label class="f" style="margin:0">صنف جديد<input class="nn" maxlength="60" placeholder="الاسم"></label>
+      <label class="f" style="margin:0">السعر<input class="np" inputmode="decimal" placeholder="₪"></label></div>
+      <button type="button" class="btn" style="width:100%;margin-top:8px">+ أضف لهذا القسم</button>`;
+    el.querySelector("button").onclick = () => {
+      const name = el.querySelector(".nn").value.trim(), price = parsePrice(el.querySelector(".np").value);
+      if (name.length < 2) { toast("اكتب اسم الصنف.", "err"); return; }
+      if (price === null || price <= 0) { toast("اكتب السعر رقم، مثل 15", "err"); return; }
+      if (menu.cats[ci].items.some(x => x.name === name)) { toast("في صنف بنفس الاسم بهالقسم.", "err"); return; }
+      menu.cats[ci].items.push({ name, price, sub: "", off: false });
+      renderMenu.open ??= new Set(); renderMenu.open.add(ci); renderMenu(); dirty();
+      toast("انضاف «" + name + "» — لا تنسى «احفظ ونشّر».");
+    };
+    return el;
+  }
+
+  // ---------- النشر ----------
+  function changes() {
+    let n = 0;
+    const orig = JSON.parse(menuOrig);
+    menu.cats.forEach((c, ci) => {
+      const oc = orig[ci]?.items || [];
+      for (const it of c.items) { const o = oc.find(x => x.name === it.name); if (!o || o.price !== it.price || !!o.off !== !!it.off) n++; }
+      n += oc.filter(o => !c.items.some(x => x.name === o.name)).length;
+    });
+    const sDirty = JSON.stringify(settings) !== settingsOrig;
+    return { n: n + (sDirty ? 1 : 0), menu: n > 0, settings: sDirty };
+  }
+  function dirty() {
+    const c = changes();
+    $("publish").disabled = c.n === 0;
+    $("publish").textContent = c.n ? `احفظ ونشّر (${c.n} ${c.n === 1 ? "تعديل" : "تعديلات"})` : "ما في تعديلات";
+  }
+  $("publish").onclick = async () => {
+    const c = changes(); if (!c.n) return;
+    $("publish").disabled = true; toast("جارٍ النشر…", "wait", 0);
+    try {
+      if (c.menu) {
+        menu.updatedAt = new Date().toISOString();
+        menuSha = await ghPut(menuPath(), JSON.stringify(menu, null, 1) + "\n", menuSha, "تعديل المينيو من صفحة التحكّم");
+        menuOrig = JSON.stringify(menu.cats);
+      }
+      if (c.settings) {
+        settingsSha = await ghPut(settingsPath(), JSON.stringify(settings, null, 1) + "\n", settingsSha || undefined, "تعديل الإعدادات من صفحة التحكّم");
+        settingsOrig = JSON.stringify(settings);
+      }
+      renderMenu(); renderOrders(); dirty();
+      toast("تم ✓ — التعديلات بتظهر للزبائن خلال دقيقة.");
+    } catch (e) { toast(humanError(e), "err", 0); dirty(); }
+  };
+  window.addEventListener("beforeunload", e => { if (menu && changes().n) { e.preventDefault(); e.returnValue = ""; } });
+
+  start();
+})();
+</script>
+</body>
+</html>
