@@ -57,6 +57,10 @@
   .price { display: flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 12px; padding: 0 10px; min-height: 50px; background: #fff; }
   .price input { border: 0; outline: 0; width: 100%; min-width: 0; font-size: 20px; font-weight: 800; text-align: center; background: transparent; }
   .price span { color: var(--ink2); font-weight: 700; }
+  .price.ro { justify-content: center; font-size: 20px; font-weight: 800; background: #faf6ef; }
+  .chk { display: flex; gap: 10px; align-items: center; font-weight: 700; margin: 4px 0 14px; flex-wrap: wrap; }
+  .chk input { width: 24px; height: 24px; accent-color: var(--brown, #3A2214); }
+  .chk small { font-weight: 500; color: var(--ink2); }
   .avail { min-width: 112px; min-height: 50px; border-radius: 12px; border: 0; font-weight: 800; cursor: pointer; color: #fff; background: var(--ok); }
   .avail.no { background: #9A8F86; }
   .it .more { margin-top: 6px; display: flex; gap: 8px; justify-content: flex-end; }
@@ -105,7 +109,11 @@
 
   <div id="app" hidden>
     <!-- ================= الطلبات ================= -->
-    <section class="card">
+    <section class="card" id="orderingOff" hidden>
+      <h2>الطلب عبر واتساب موقوف</h2>
+      <p class="muted">المينيو هلأ للتصفّح بس: الزبون بيشوف الأصناف والأسعار، وما في زرّ طلب ولا واتساب. بترجّعه من «الإعدادات» ← «الطلب عبر واتساب شغّال».</p>
+    </section>
+    <section class="card" id="ordersCard">
       <h2>استقبال الطلبات</h2>
       <button class="big" type="button" id="toggleOrders"></button>
       <p class="muted" id="ordersHint"></p>
@@ -113,8 +121,9 @@
 
     <!-- ================= الأصناف ================= -->
     <section class="card">
-      <h2>الأصناف والأسعار</h2>
-      <p class="muted">غيّر السعر، أو اضغط «متوفر» ليصير «خلص». وبعدين اضغط «احفظ ونشّر» تحت.</p>
+      <h2>شو متوفر اليوم؟</h2>
+      <p class="muted">اضغط «متوفر» ليصير «خلص» (ولما يرجع اضغطه كمان مرّة)، وبعدين «احفظ ونشّر» تحت.</p>
+      <p class="muted"><b>الأسعار والأصناف الجديدة بتتعدّل من نظام جمان</b> (محمد ← «انشر المينيو على الإنترنت») — عشان سعر المينيو يضل نفس سعر الكاشير.</p>
       <input class="search" id="q" type="search" placeholder="دوّر على صنف…" autocomplete="off">
       <div id="cats"></div>
     </section>
@@ -123,6 +132,7 @@
     <section class="card">
       <details id="settingsBox">
         <summary><h2 style="display:inline">الإعدادات ▾</h2></summary>
+        <label class="chk"><input type="checkbox" id="sOrdering"> الطلب عبر واتساب شغّال <small>(إذا مش معلّم: المينيو للتصفّح بس)</small></label>
         <label class="f">رقم واتساب الطلبات<input id="sWa" inputmode="tel" placeholder="0599123456" dir="ltr"><small>الرقم اللي بتوصله الطلبات.</small></label>
         <div class="row2">
           <label class="f">الطلبات من الساعة<input id="sFrom" type="time"></label>
@@ -277,6 +287,7 @@
 
   // ---------- الطلبات: زرّ واحد ----------
   function renderOrders() {
+    $("orderingOff").hidden = settings.ordering === true; $("ordersCard").hidden = settings.ordering !== true;   // [V21.28] مجمَّد افتراضاً
     const on = settings.ordersOpen !== false;
     $("toggleOrders").className = "big " + (on ? "open" : "paused");
     $("toggleOrders").textContent = on ? "الطلبات مفتوحة ✓ (اضغط للإيقاف)" : "الطلبات موقوفة (اضغط للفتح)";
@@ -302,9 +313,12 @@
   function fillSettings() {
     $("sWa").value = settings.whatsapp || ""; $("sFrom").value = settings.orderFrom || ""; $("sTo").value = settings.orderTo || "";
     $("sHours").value = (settings.hours || []).join("\n"); $("sMap").value = settings.mapsUrl || ""; $("sPause").value = settings.pauseNote || "";
+    $("sOrdering").checked = settings.ordering === true;
+    $("sOrdering").onchange = () => { readSettings(); renderOrders(); dirty(); };
     for (const id of ["sWa", "sFrom", "sTo", "sHours", "sMap", "sPause"]) $(id).oninput = () => { readSettings(); dirty(); };
   }
   function readSettings() {
+    settings.ordering = $("sOrdering").checked;
     settings.whatsapp = $("sWa").value.trim(); settings.orderFrom = $("sFrom").value; settings.orderTo = $("sTo").value;
     settings.hours = $("sHours").value.split("\n").map(x => x.trim()).filter(Boolean);
     settings.mapsUrl = $("sMap").value.trim(); settings.pauseNote = $("sPause").value.trim();
@@ -323,7 +337,6 @@
       d.innerHTML = `<summary><span>${esc(c.name)}</span><span class="muted">${c.items.length} صنف${off ? " · " + off + " خلص" : ""}</span></summary>`;
       const wrap = document.createElement("div"); wrap.className = "items";
       for (const { it, ii } of list) wrap.appendChild(itemCard(ci, ii, it));
-      if (!q) wrap.appendChild(addCard(ci));
       d.appendChild(wrap); box.appendChild(d);
     });
   }
@@ -338,21 +351,11 @@
     el.className = "it" + (it.off ? " off" : "") + (!o || o.price !== it.price || !!o.off !== !!it.off ? " changed" : "");
     el.innerHTML = `<div class="nm">${esc(it.name)}</div>
       <div class="ctl">
-        <label class="price"><input inputmode="decimal" value="${esc(it.price)}" aria-label="سعر ${esc(it.name)}"><span>₪</span></label>
+        <span class="price ro" aria-label="سعر ${esc(it.name)}">${esc(it.price)} ₪</span>
         <button type="button" class="avail${it.off ? " no" : ""}">${it.off ? "خلص" : "متوفر ✓"}</button>
       </div>
-      <div class="more"><button type="button" class="link">حذف الصنف</button></div>`;
-    const inp = el.querySelector("input");
-    inp.onchange = () => {
-      const p = parsePrice(inp.value);
-      if (p === null || p < 0) { toast("اكتب السعر رقم، مثل 15 أو 12.5", "err"); inp.value = it.price; return; }
-      it.price = p; inp.value = p; refreshCard(el, ci, it); dirty();
-    };
+`;
     el.querySelector(".avail").onclick = () => { it.off = !it.off; refreshCard(el, ci, it); dirty(); };
-    el.querySelector(".link").onclick = () => {
-      if (!confirm(`أكيد بدك تحذف «${it.name}» من المينيو؟`)) return;
-      menu.cats[ci].items.splice(menu.cats[ci].items.indexOf(it), 1); renderMenu(); dirty();
-    };
     return el;
   }
   function refreshCard(el, ci, it) {

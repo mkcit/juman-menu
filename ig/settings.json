@@ -1,5 +1,6 @@
 {
- "whatsapp": "+972 59-995-4040",
+ "ordering": false,
+ "whatsapp": "",
  "place": "النصيرات",
  "mapsUrl": "",
  "hours": [
@@ -7,8 +8,8 @@
   "الوجبات حتى 10 ليلاً"
  ],
  "note": "",
- "ordersOpen": false,
+ "ordersOpen": true,
  "orderFrom": "09:00",
  "orderTo": "21:30",
- "pauseNote": "نسعد بخدمتكم في وقت لاحق"
+ "pauseNote": ""
 }

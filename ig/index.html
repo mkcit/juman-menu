@@ -215,7 +215,11 @@
   };
 
   // ordersOpen: مفتاح الشيف (موقوفة مؤقتاً) · orderFrom/orderTo: ساعات استقبال الطلبات بتوقيت غزة («09:00» · «21:00»)
-  let settings = { whatsapp: "", place: "", mapsUrl: "", hours: [], note: "", ordersOpen: true, orderFrom: "", orderTo: "", pauseNote: "" };
+  let settings = { whatsapp: "", place: "", mapsUrl: "", hours: [], note: "", ordering: false, ordersOpen: true, orderFrom: "", orderTo: "", pauseNote: "" };
+  /** [V21.24 · V21.28] الطلب (السلّة + واتساب) **مجمَّد افتراضاً** — طلب المالك: «لا أريد التواصل على واتساب ولا الإضافة للسلّة الآن».
+      يرجع فقط إن كُتب صراحةً ordering:true (من صفحة التحكّم ← «الطلب عبر واتساب شغّال»). ملف إعداداتٍ قديم بلا المفتاح ⇒ مجمَّد. */
+  const ordering = () => settings.ordering === true;
+  let space = null;   // [V21.28] {name, hourPrice} من menu.json — ينشره نظام جمان
 
   /** الدقيقة الآن بتوقيت غزة (0–1439) — جوال الزبون قد يكون مضبوطاً على غير ذلك. */
   function gazaMinutes() {
@@ -243,7 +247,8 @@
   }
   function showState() {
     const st = ordersState();
-    $("closed").textContent = st.why; $("closed").hidden = st.open;
+    $("closed").textContent = st.why; $("closed").hidden = st.open || !ordering();
+    $("waTop").hidden = !(ordering() && st.open && waNumber(settings.whatsapp));   // الطلبات موقوفة أو برّا الساعات ⇒ لا «راسلنا على واتساب»
     if ($("dlg").open) sheet();
   }
   let items = [];          // [{id, cat, name, sub, price, off}]
@@ -265,12 +270,14 @@
         fetch("photos.json").then(r => r.ok ? r.json() : {}).then(x => { photos = x || {}; }).catch(() => {})   // الصور اختيارية
       ]);
       settings = Object.assign(settings, s);
+      space = m && m.space && typeof m.space === "object" ? m.space : null;
       let n = 0;
       for (const c of m.cats || [])
         for (const it of c.items || [])
           items.push({ id: c.name + "|" + it.name, cat: c.name, name: it.name, sub: it.sub || "", price: Number(it.price) || 0, off: !!it.off });
       // سلةٌ قديمة فيها صنفٌ اختفى أو صار غير متوفر ⇒ تُنظَّف
-      for (const id of Object.keys(cart)) { const it = items.find(x => x.id === id); if (!it || it.off || !(cart[id] > 0)) delete cart[id]; }
+      for (const id of Object.keys(cart)) { const it = items.find(x => x.id === id); if (!ordering() || !it || it.off || !(cart[id] > 0)) delete cart[id]; }
+      if (!ordering()) { $("how").hidden = true; store.set(cart); }
       header(); cats(m.cats || []); dishes(); render(); bar(); showState();
       setInterval(showState, 60000);   // تُفتح وتُسكّر الطلبات مع الساعة دون إعادة تحميل
     } catch (e) {
@@ -282,10 +289,13 @@
     $("tag").textContent = "مطعم وكافيه" + (settings.place ? " · " + settings.place : "");
     $("foot").textContent = settings.place ? " · " + settings.place : "";
     $("chips").innerHTML = "";
-    for (const h of settings.hours || []) { const li = document.createElement("li"); li.textContent = h; $("chips").appendChild(li); }
+    // [V21.28] سعر مساحة العمل من جمان لا نصٌّ ثابت: سطر «مساحة…» القديم في الإعدادات يُتجاهل حين يصل السعر من جمان.
+    const lines = (settings.hours || []).filter(h => !(space && /مساحة/.test(h)));
+    if (space && Number(space.hourPrice) > 0) lines.push((space.name || "مساحة العمل") + " " + fmt(Number(space.hourPrice)) + " ₪ للساعة");
+    for (const h of lines) { const li = document.createElement("li"); li.textContent = h; $("chips").appendChild(li); }
     if (settings.note) $("how").innerHTML = "<b>كيف تطلب؟</b> " + escapeHtml(settings.note);
     const wa = waNumber(settings.whatsapp);
-    if (wa) { $("waTop").href = "https://wa.me/" + wa + "?text=" + encodeURIComponent("مرحباً جُمان، عندي سؤال:"); $("waTop").hidden = false; }
+    if (wa && ordering()) { $("waTop").href = "https://wa.me/" + wa + "?text=" + encodeURIComponent("مرحباً جُمان، عندي سؤال:"); }   // يظهر من showState: بس لما الطلبات مفتوحة
     if (settings.mapsUrl) { $("map").href = settings.mapsUrl; $("map").hidden = false; }
   }
 
@@ -348,7 +358,7 @@
     d.innerHTML = (ph ? '<img class="ph" alt="" loading="lazy">' : "") + '<div class="txt"><div class="nm">' + escapeHtml(it.name) + "</div>" + (it.sub ? '<div class="sub">' + escapeHtml(it.sub) + "</div>" : "")
       + '<div class="pr">' + fmt(it.price) + " ₪</div></div>";
     if (ph) { const im = d.querySelector(".ph"); im.src = ph; im.onclick = () => zoom(it); }
-    if (!it.off) d.appendChild(ctrl(it));
+    if (!it.off && ordering()) d.appendChild(ctrl(it));
     return d;
   }
 
@@ -377,6 +387,7 @@
   const total = () => picked().reduce((s, x) => s + x.it.price * x.q, 0);
 
   function bar() {
+    if (!ordering()) { $("cartbar").classList.remove("show"); return; }
     const p = picked(), n = p.reduce((s, x) => s + x.q, 0);
     $("cartbar").classList.toggle("show", n > 0);
     $("cnt").textContent = n; $("tot").textContent = fmt(total()) + " ₪";
