@@ -1,6 +1,17 @@
 {
-  "updatedAt": "2026-11-21T19:48:11.547Z",
+  "updatedAt": "2026-11-24T21:05:04.241Z",
   "cats": [
+    {
+      "name": "باقات",
+      "items": [
+        {
+          "name": "عرض الأصدقاء شخصين",
+          "price": 65,
+          "sub": "",
+          "off": false
+        }
+      ]
+    },
     {
       "name": "وجبات الإفطار",
       "items": [
@@ -65,7 +76,7 @@
         },
         {
           "name": "كابتشينو",
-          "price": 8,
+          "price": 10,
           "sub": "",
           "off": false
         },
@@ -83,7 +94,7 @@
         },
         {
           "name": "هوت شوكلت",
-          "price": 15,
+          "price": 10,
           "sub": "",
           "off": false
         }
@@ -430,7 +441,7 @@
         },
         {
           "name": "عصير جوافة",
-          "price": 12,
+          "price": 15,
           "sub": "",
           "off": false
         },
@@ -506,19 +517,19 @@
       "items": [
         {
           "name": "بامبوليني بلوبيري",
-          "price": 20,
+          "price": 15,
           "sub": "",
           "off": false
         },
         {
           "name": "بامبوليني توفي",
-          "price": 20,
+          "price": 15,
           "sub": "",
           "off": false
         },
         {
           "name": "بامبوليني شوكولاته",
-          "price": 20,
+          "price": 15,
           "sub": "",
           "off": false
         },
